@@ -61,14 +61,13 @@ public class TableViewController {
         });
 
         // Add a listener to populate purchases when a customer is selected
-        tableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Customer>() {
-            @Override
-            public void changed(ObservableValue<? extends Customer> observable, Customer oldValue, Customer newValue) {
-                if (newValue != null) {
-                    populatePurchaseListView(newValue.getPurchases());
-                } else {
-                    purchaseListView.setItems(FXCollections.observableArrayList());
-                }
+        tableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                populatePurchaseListView(newValue.getPurchases());
+                updatePurchaseLabels(newValue.getPurchases());
+            } else {
+                purchaseListView.setItems(FXCollections.observableArrayList());
+                clearPurchaseLabels();
             }
         });
     }
@@ -87,6 +86,30 @@ public class TableViewController {
 
     private void updateRowsInTableLabel() {
         rowsInTableLabel.setText("Rows in table: " + tableView.getItems().size());
+    }
+
+    private void updatePurchaseLabels(List<Product> purchases) {
+        if (purchases != null && !purchases.isEmpty()) {
+            double totalRegularPrice = purchases.stream()
+                    .mapToDouble(Product::getRegularPrice)
+                    .sum();
+            double totalSalePrice = purchases.stream()
+                    .mapToDouble(Product::getSalePrice)
+                    .sum();
+            double totalSavings = totalRegularPrice - totalSalePrice;
+
+            msrpLabel.setText(String.format("Total MSRP: $%.2f", totalRegularPrice));
+            saleLabel.setText(String.format("Total Sale Price: $%.2f", totalSalePrice));
+            savingsLabel.setText(String.format("Total Savings: $%.2f", totalSavings));
+        } else {
+            clearPurchaseLabels();
+        }
+    }
+
+    private void clearPurchaseLabels() {
+        msrpLabel.setText("Total MSRP: $0.00");
+        saleLabel.setText("Total Sale Price: $0.00");
+        savingsLabel.setText("Total Savings: $0.00");
     }
 
     @FXML
