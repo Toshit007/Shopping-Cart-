@@ -1,10 +1,9 @@
 package ca.georgian.test2;
 
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -14,6 +13,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TableViewController {
 
@@ -41,6 +41,8 @@ public class TableViewController {
     private Label saleLabel;
     @FXML
     private Label savingsLabel;
+
+    private ObservableList<Customer> allCustomers;
 
     @FXML
     public void initialize() {
@@ -70,6 +72,8 @@ public class TableViewController {
                 clearPurchaseLabels();
             }
         });
+
+        allCustomers = FXCollections.observableArrayList();
     }
 
     private void populatePurchaseListView(List<Product> purchases) {
@@ -114,21 +118,46 @@ public class TableViewController {
 
     @FXML
     private void top10Customers() {
-        // Implement the logic to show top 10 customers
     }
 
     @FXML
     private void customersSavedOver5() {
-        // Implement the logic to show customers who saved over $5
+        if (allCustomers.isEmpty()) {
+
+            loadAllCustomers();
+        }
+        List<Customer> filteredCustomers = allCustomers.stream()
+                .filter(Customer::hasSavedFiveOrMore)
+                .collect(Collectors.toList());
+
+        updateTableView(filteredCustomers);
     }
 
     @FXML
     private void loadAllCustomers() {
-        // Implement the logic to load all customers
+        List<Customer> customers = getAllCustomers();
+        allCustomers.setAll(customers);
+        updateTableView(customers);
+    }
+    private void updateTableView(List<Customer> customers) {
+
+        tableView.getSelectionModel().clearSelection();
+
+        tableView.setItems(FXCollections.observableArrayList(customers));
+
+        updateRowsInTableLabel();
+
+        purchaseListView.setItems(FXCollections.observableArrayList());
+        clearPurchaseLabels();
     }
 
     public void loadCustomersIntoTable(List<Customer> customers) {
-        tableView.setItems(FXCollections.observableArrayList(customers));
-        updateRowsInTableLabel(); // Update the label after loading customers
+        allCustomers.setAll(customers);
+        updateTableView(customers);
+    }
+
+    private List<Customer> getAllCustomers() {
+
+        return List.of();
     }
 }
