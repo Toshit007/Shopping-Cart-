@@ -1,3 +1,6 @@
+//NAME - Toshit Narwal
+//STUDENT NO. - 20056512
+
 module ca.georgian.test2 {
     requires javafx.controls;
     requires javafx.fxml;
