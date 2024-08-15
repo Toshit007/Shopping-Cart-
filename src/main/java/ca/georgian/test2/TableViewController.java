@@ -11,7 +11,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
-
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,6 +54,8 @@ public class TableViewController {
         totalPurchaseColumn.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().getTotalPurchasesFormatted()));
 
+        allCustomers = FXCollections.observableArrayList();
+
         // Update the number of rows whenever items are added or removed
         tableView.itemsProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
@@ -67,13 +69,18 @@ public class TableViewController {
             if (newValue != null) {
                 populatePurchaseListView(newValue.getPurchases());
                 updatePurchaseLabels(newValue.getPurchases());
+
+                if (!newValue.getPurchases().isEmpty()) {
+                    String imageUrl = newValue.getPurchases().get(0).getImage();
+                    imageView.setImage(new javafx.scene.image.Image(imageUrl));
+                } else {
+                    imageView.setImage(null);
+                }
             } else {
                 purchaseListView.setItems(FXCollections.observableArrayList());
                 clearPurchaseLabels();
             }
         });
-
-        allCustomers = FXCollections.observableArrayList();
     }
 
     private void populatePurchaseListView(List<Product> purchases) {
@@ -81,7 +88,7 @@ public class TableViewController {
             purchaseListView.setItems(FXCollections.observableArrayList(
                     purchases.stream()
                             .map(p -> p.getName() + " - $" + p.getSalePrice())
-                            .toList()
+                            .collect(Collectors.toList())
             ));
         } else {
             purchaseListView.setItems(FXCollections.observableArrayList());
@@ -118,12 +125,21 @@ public class TableViewController {
 
     @FXML
     private void top10Customers() {
+        if (allCustomers.isEmpty()) {
+            loadAllCustomers();
+        }
+
+        List<Customer> top10Customers = allCustomers.stream()
+                .sorted(Comparator.comparingDouble(Customer::getTotalPurchases).reversed())
+                .limit(10)
+                .collect(Collectors.toList());
+
+        updateTableView(top10Customers);
     }
 
     @FXML
     private void customersSavedOver5() {
         if (allCustomers.isEmpty()) {
-
             loadAllCustomers();
         }
         List<Customer> filteredCustomers = allCustomers.stream()
@@ -140,24 +156,18 @@ public class TableViewController {
         updateTableView(customers);
     }
     private void updateTableView(List<Customer> customers) {
-
         tableView.getSelectionModel().clearSelection();
-
         tableView.setItems(FXCollections.observableArrayList(customers));
-
         updateRowsInTableLabel();
-
         purchaseListView.setItems(FXCollections.observableArrayList());
         clearPurchaseLabels();
     }
-
     public void loadCustomersIntoTable(List<Customer> customers) {
         allCustomers.setAll(customers);
         updateTableView(customers);
     }
 
     private List<Customer> getAllCustomers() {
-
         return List.of();
     }
 }
