@@ -1,8 +1,6 @@
-//NAME - Toshit Narwal
-//STUDENT NO. - 20056512
-
 package ca.georgian.test2;
 
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -79,7 +77,12 @@ public class TableViewController {
 
     public void loadCustomersIntoTable(List<Customer> customers) {
         tableView.getItems().setAll(customers);
-        rowsInTableLabel.setText("Rows in table: " + tableView.getItems().size());
+        updateRowsInTableLabel();
+    }
+
+    private void updateRowsInTableLabel() {
+        ObservableList<Customer> items = tableView.getItems();
+        rowsInTableLabel.setText("Rows in table: " + items.size());
     }
 
     // Implement event handler methods for buttons
